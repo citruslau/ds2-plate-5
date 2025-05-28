@@ -1,7 +1,8 @@
-1. (Page: 1 | Coordinates: a1 - y31 | Points: 10.0 pts) <br>
+# 1. (Page: 1 | Coordinates: a1 - y31 | Points: 10.0 pts)
+
 Write a java function that receives a parameter of list of edges of a simple graph, the program should return and determine whether it is connected and return the number of connected components if it is not connected.  
 
-```
+```java
 import java.util.*;
 
 public class GraphConnectivity {
