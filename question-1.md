@@ -3,6 +3,7 @@
 Write a java function that receives a parameter of list of edges of a simple graph, the program should return and determine whether it is connected and return the number of connected components if it is not connected.  
 
 ```java
+package graphconnectivity;
 import java.util.*;
 
 public class GraphConnectivity {
