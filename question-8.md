@@ -4,168 +4,79 @@ Write a Java function that receives two graphs represented by their sets of vert
 
 ```java
 package isomorphism;
-
 import java.util.*;
-
-public class GraphIsomorphism {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("For graph1:");
-        System.out.print("Enter vertices (space separated): ");
-        String[] v1Tokens = scanner.nextLine().split("\\s+");
-        Set<String> vertexSet1 = new HashSet<>(Arrays.asList(v1Tokens));
-        System.out.print("Enter the number of edges: ");
-        int e1 = scanner.nextInt();
-        scanner.nextLine();
-        List<String[]> edges1 = new ArrayList<>();
-        for (int i = 0; i < e1; i++) {
-            System.out.print("Enter edge " + (i + 1) + " (two vertices): ");
-            String[] edgeTokens = scanner.nextLine().split("\\s+");
-            if (edgeTokens.length != 2) {
-                System.out.println("Invalid edge. Please enter two vertices.");
-                i--;
-            } else {
-                edges1.add(edgeTokens);
+public class GI {
+    public static void main(String[] a) {
+        Scanner s = new Scanner(System.in);
+        Set<String>[] vs = new Set[2];
+        List<String[]>[] es = new List[2];
+        int[] ec = new int[2];
+        for (int i=0; i<2; i++) {
+            System.out.println("G"+(i+1)+":");
+            System.out.print("V: ");
+            vs[i] = new HashSet<>(Arrays.asList(s.nextLine().split(" ")));
+            System.out.print("E: ");
+            ec[i] = s.nextInt(); s.nextLine();
+            es[i] = new ArrayList<>();
+            for (int j=0; j<ec[i]; j++) {
+                System.out.print("E"+(j+1)+": ");
+                String[] e = s.nextLine().split(" ");
+                if (e.length != 2) { System.out.println("Retry."); j--; }
+                else es[i].add(e);
             }
         }
-        System.out.println("For graph2:");
-        System.out.print("Enter vertices (space separated): ");
-        String[] v2Tokens = scanner.nextLine().split("\\s+");
-        Set<String> vertexSet2 = new HashSet<>(Arrays.asList(v2Tokens));
-        System.out.print("Enter the number of edges: ");
-        int e2 = scanner.nextInt();
-        scanner.nextLine();
-        List<String[]> edges2 = new ArrayList<>();
-        for (int i = 0; i < e2; i++) {
-            System.out.print("Enter edge " + (i + 1) + " (two vertices): ");
-            String[] edgeTokens = scanner.nextLine().split("\\s+");
-            if (edgeTokens.length != 2) {
-                System.out.println("Invalid edge. Please enter two vertices.");
-                i--;
-            } else {
-                edges2.add(edgeTokens);
+        if (vs[0].size() != vs[1].size() || ec[0] != ec[1]) {
+            System.out.println("Not isomorphic."); return; }
+        Map<String,Integer>[] deg = new Map[2];
+        for (int i=0; i<2; i++) {
+            deg[i] = new HashMap<>();
+            for (String v : vs[i]) deg[i].put(v,0);
+            for (String[] e : es[i]) {
+                String u=e[0], w=e[1];
+                deg[i].put(u, deg[i].get(u) + (u.equals(w) ? 2 : 1));
+                if (!u.equals(w)) deg[i].put(w, deg[i].get(w) + 1);
             }
         }
-        if (vertexSet1.size() != vertexSet2.size() || e1 != e2) {
-            System.out.println("The graphs are not isomorphic.");
-            return;
+        List<Integer> d0 = new ArrayList<>(deg[0].values());
+        List<Integer> d1 = new ArrayList<>(deg[1].values());
+        Collections.sort(d0); Collections.sort(d1);
+        if (!d0.equals(d1)) { System.out.println("Not isomorphic."); return; }
+        List<String>[] sv = new List[2];
+        int n = vs[0].size();
+        for (int i=0; i<2; i++) {
+            sv[i] = new ArrayList<>(vs[i]); Collections.sort(sv[i]);
         }
-        Map<String, Integer> degMap1 = new HashMap<>();
-        for (String v : vertexSet1) {
-            degMap1.put(v, 0);
-        }
-        for (String[] edge : edges1) {
-            String u = edge[0];
-            String v = edge[1];
-            if (u.equals(v)) {
-                degMap1.put(u, degMap1.get(u) + 2);
-            } else {
-                degMap1.put(u, degMap1.get(u) + 1);
-                degMap1.put(v, degMap1.get(v) + 1);
+        int[][][] adj = new int[2][n][n];
+        for (int g=0; g<2; g++)
+            for (String[] e : es[g]) {
+                int i = sv[g].indexOf(e[0]), j = sv[g].indexOf(e[1]);
+                if (i==j) adj[g][i][i] = 1;
+                else { adj[g][i][j] = 1; adj[g][j][i] = 1; }
             }
-        }
-        Map<String, Integer> degMap2 = new HashMap<>();
-        for (String v : vertexSet2) {
-            degMap2.put(v, 0);
-        }
-        for (String[] edge : edges2) {
-            String u = edge[0];
-            String v = edge[1];
-            if (u.equals(v)) {
-                degMap2.put(u, degMap2.get(u) + 2);
-            } else {
-                degMap2.put(u, degMap2.get(u) + 1);
-                degMap2.put(v, degMap2.get(v) + 1);
-            }
-        }
-        List<Integer> degSeq1 = new ArrayList<>(degMap1.values());
-        List<Integer> degSeq2 = new ArrayList<>(degMap2.values());
-        Collections.sort(degSeq1);
-        Collections.sort(degSeq2);
-        if (!degSeq1.equals(degSeq2)) {
-            System.out.println("The graphs are not isomorphic.");
-            return;
-        }
-        List<String> vertices1 = new ArrayList<>(vertexSet1);
-        Collections.sort(vertices1);
-        List<String> vertices2 = new ArrayList<>(vertexSet2);
-        Collections.sort(vertices2);
-        int n = vertices1.size();
-        int[][] adj1 = new int[n][n];
-        for (String[] edge : edges1) {
-            String u = edge[0];
-            String v = edge[1];
-            int i = vertices1.indexOf(u);
-            int j = vertices1.indexOf(v);
-            if (i == j) {
-                adj1[i][i] = 1;
-            } else {
-                adj1[i][j] = 1;
-                adj1[j][i] = 1;
-            }
-        }
-        int[][] adj2 = new int[n][n];
-        for (String[] edge : edges2) {
-            String u = edge[0];
-            String v = edge[1];
-            int i = vertices2.indexOf(u);
-            int j = vertices2.indexOf(v);
-            if (i == j) {
-                adj2[i][i] = 1;
-            } else {
-                adj2[i][j] = 1;
-                adj2[j][i] = 1;
-            }
-        }
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            indices.add(i);
-        }
-        List<List<Integer>> perms = generatePermutations(indices);
+        List<List<Integer>> perms = permute(n);
         for (List<Integer> p : perms) {
             boolean match = true;
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (adj1[i][j] != adj2[p.get(i)][p.get(j)]) {
-                        match = false;
-                        break;
-                    }
-                }
-                if (!match) break;
-            }
-            if (match) {
-                System.out.println("The graphs are isomorphic.");
-                return;
-            }
+            for (int i=0; i<n && match; i++)
+                for (int j=0; j<n; j++)
+                    if (adj[0][i][j] != adj[1][p.get(i)][p.get(j)]) {
+                        match = false; break; }
+            if (match) { System.out.println("Isomorphic."); return; }
         }
-        System.out.println("The graphs are not isomorphic.");
+        System.out.println("Not isomorphic.");
     }
-
-    private static List<List<Integer>> generatePermutations(List<Integer> list) {
-        List<List<Integer>> result = new ArrayList<>();
-        if (list.isEmpty()) {
-            result.add(new ArrayList<>());
-            return result;
-        }
-        boolean[] used = new boolean[list.size()];
-        backtrack(result, new ArrayList<>(), used, list);
-        return result;
+    static List<List<Integer>> permute(int n) {
+        List<List<Integer>> r = new ArrayList<>();
+        bt(r, new ArrayList<>(), new boolean[n], n);
+        return r;
     }
-
-    private static void backtrack(List<List<Integer>> result, List<Integer> temp, boolean[] used, List<Integer> list) {
-        if (temp.size() == list.size()) {
-            result.add(new ArrayList<>(temp));
-            return;
-        }
-        for (int i = 0; i < list.size(); i++) {
-            if (!used[i]) {
-                used[i] = true;
-                temp.add(list.get(i));
-                backtrack(result, temp, used, list);
-                temp.remove(temp.size() - 1);
-                used[i] = false;
+    static void bt(List<List<Integer>> r, List<Integer> t, boolean[] u, int n) {
+        if (t.size() == n) r.add(new ArrayList<>(t));
+        else for (int i=0; i<n; i++)
+            if (!u[i]) {
+                u[i] = true; t.add(i);
+                bt(r, t, u, n);
+                u[i] = false; t.remove(t.size()-1);
             }
-        }
     }
 }
 ```
